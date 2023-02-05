@@ -1,0 +1,30 @@
+{
+  "name": "rs-clone-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint ./"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Morsul/rs-clone-server.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Morsul/rs-clone-server/issues"
+  },
+  "homepage": "https://github.com/Morsul/rs-clone-server#readme",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mongodb": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.19",
+    "eslint": "^8.33.0"
+  }
+}
