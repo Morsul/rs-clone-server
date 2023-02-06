@@ -2,6 +2,16 @@ const { response } = require("express");
 const express = require("express");
 const app = express();
 const port = 3000;
+const sortQuery = {
+  field: {
+    time: "timeField",
+    score: "scoreFiel"
+  },
+  order:{
+    ASC: 1,
+    DESC: -1
+  }
+}
 
 const { MongoClient } = require('mongodb');
 
@@ -86,6 +96,20 @@ app.post('/score', (req, res) => {
   .catch(err=>res.status(500).json({err: 'Could not save score'}))
 });
 // add score end
+
+//get score + sorting
+app.get('/score', (req, res)=>{
+  result.find(
+    {},
+    {projection: {_id: 0}}
+  )
+  .sort(
+    {[sortQuery.field[req.query.sort]]: sortQuery.order[req.query.order]}
+  ).toArray()
+  .then(result=> res.status(200).json(result))
+  .catch(err=>res.status(500).json({err: 'Could not get score'}))
+})
+//get score + sorting
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}!`);
