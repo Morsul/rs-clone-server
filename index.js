@@ -1,3 +1,4 @@
+const { response } = require("express");
 const express = require("express");
 const app = express();
 const port = 3000;
@@ -73,49 +74,18 @@ app.get('/login', (req, res) => {
       return res.status(200).json(result);
     }    
   })
-  .catch(err =>{
-    console.log(err);
-    res.status(500).json({err: 'Could note get info'})
-  })
+  .catch(err =>res.status(500).json({err: 'Could note get info'}))
 });
 
 // add score start
-app.put('/score', (req, res) => {
+app.post('/score', (req, res) => {
   const score = req.body;
-  result.findOne({userField: score.userField })
-  .then(result=>{
-    if (result === null){
-      addScore(score)
-    }else if(result.timeField > score.timeField){
-      updateScore(score)
-    }
-  }).then(result=>{
-    res.status(201).json(result)
-  })
-  .catch(err=>{
-    res.status(500).json({err: 'Could note save score'})
-  })
-});
-
-addScore = (scoreBody) =>{
-  result.insertOne(scoreBody)  
-  .then(result=>result)
-}
-
-updateScore = (scoreBody) =>{
-  result.updateOne({userField: scoreBody.userField},{
-    $set: {
-      scoreFiel: scoreBody.scoreFiel,
-      timeField: scoreBody.timeField
-    }
-  })  
-  .then(result=>result)
-}
-// add score end
-
-app.get('/score', (req, res)=>{
   
-})
+  result.insertOne(score)
+  .then(result=>res.status(201).json(result))
+  .catch(err=>res.status(500).json({err: 'Could not save score'}))
+});
+// add score end
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}!`);
