@@ -1,6 +1,8 @@
-const { response } = require("express");
 const express = require("express");
+const { MongoClient } = require('mongodb');
+const bcrypt = require('bcrypt');
 const app = express();
+
 const port = 3000;
 const sortQuery = {
   field: {
@@ -12,8 +14,6 @@ const sortQuery = {
     DESC: -1
   }
 }
-
-const { MongoClient } = require('mongodb');
 
 const mongoDB = 'mongodb+srv://d2200423:3E24xrgBBgqbl2I0@mm1.yflufpd.mongodb.net/?retryWrites=true&w=majority';
 const client = new MongoClient(mongoDB);
@@ -42,9 +42,9 @@ main()
 
 
 // add user
-app.post('/user', (req, res) => {
+app.post('/user', async (req, res) => {
   const user = req.body
-  
+  user.pwdField = await bcrypt.hash(user.pwdField, Math.random(10, 25))
   users.insertOne(user)
   .then(result=>{
     res.status(201).json(result)
@@ -76,8 +76,9 @@ app.get('/login', (req, res) => {
     {userField: req.body.userField}, 
     {projection: {_id: 0}}
   )
-  .then((result)=>{
-    if(result.pwdField !== userPwd){
+  .then(async (result)=>{
+    const isPWDSame = await bcrypt.compare(userPwd, result.pwdField);
+    if(!isPWDSame){
       return res.status(404).json({err: 'Wrong password'});
     } else {
       delete result.pwdField;
