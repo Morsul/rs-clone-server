@@ -100,12 +100,26 @@ app.post('/score', (req, res) => {
 
 //get score + sorting
 app.get('/score', (req, res)=>{
+  const query = req.query;
+  const searchQuery = query.levelIDFild === undefined ? {} : {levelIDFild: query.levelIDFild}
+  let limit = 0
+  let skip = 0;
+  
+  if (query.limit !== undefined){
+    limit = Number(query.limit);
+    if (query.page !== undefined){
+      skip = Number(limit*(query.page -1))
+    }
+  }
+  
   result.find(
-    {},
+    searchQuery,
     {projection: {_id: 0}}
   )
+  .skip(skip)
+  .limit(limit)
   .sort(
-    {[sortQuery.field[req.query.sort]]: sortQuery.order[req.query.order]}
+    {[sortQuery.field[query.sort]]: sortQuery.order[query.order]}
   ).toArray()
   .then(result=> res.status(200).json(result))
   .catch(err=>res.status(500).json({err: 'Could not get score'}))
