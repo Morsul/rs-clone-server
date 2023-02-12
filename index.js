@@ -5,10 +5,6 @@ const app = express();
 
 const port = 3000;
 const sortQuery = {
-  field: {
-    time: "timeField",
-    score: "scoreFiel"
-  },
   order:{
     ASC: 1,
     DESC: -1
@@ -44,7 +40,7 @@ main()
 // add user
 app.post('/user', async (req, res) => {
   const user = req.body
-  user.pwdField = await bcrypt.hash(user.pwdField, Math.random(10, 25))
+  user.password = await bcrypt.hash(user.password, Math.random(10, 25))
   users.insertOne(user)
   .then(result=>{
     res.status(201).json(result)
@@ -57,8 +53,8 @@ app.post('/user', async (req, res) => {
 // get user by name(login)
 app.get('/user/:name', (req, res) => {
   users.findOne(
-    {userField: req.params.name}, 
-    {projection: {_id: 0, pwdField: 0}}
+    {username: req.params.name}, 
+    {projection: {_id: 0, password: 0}}
   )
   .then(result=>{
     res.status(200).json(result);
@@ -71,21 +67,21 @@ app.get('/user/:name', (req, res) => {
 
 // login
 app.get('/login', (req, res) => {
-  const userPwd = req.body.userPwd
+  const userPwd = req.query.password
   users.findOne(
-    {userField: req.body.userField}, 
+    {username: req.query.username}, 
     {projection: {_id: 0}}
   )
   .then(async (result)=>{
-    const isPWDSame = await bcrypt.compare(userPwd, result.pwdField);
+    const isPWDSame = await bcrypt.compare(userPwd, result.password);
     if(!isPWDSame){
-      return res.status(404).json({err: 'Wrong password'});
+      return res.status(500).json({err: 'Wrong password'});
     } else {
-      delete result.pwdField;
+      delete result.password;
       return res.status(200).json(result);
     }    
   })
-  .catch(err =>res.status(500).json({err: 'Could note get info'}))
+  .catch(err =>res.status(404).json({err: 'User not found'}))
 });
 
 // add score start
@@ -101,7 +97,7 @@ app.post('/score', (req, res) => {
 //get score + sorting
 app.get('/score', (req, res)=>{
   const query = req.query;
-  const searchQuery = query.levelIDFild === undefined ? {} : {levelIDFild: query.levelIDFild}
+  const searchQuery = query.level === undefined ? {} : {level: query.level}
   let limit = 0
   let skip = 0;
   
@@ -119,7 +115,7 @@ app.get('/score', (req, res)=>{
   .skip(skip)
   .limit(limit)
   .sort(
-    {[sortQuery.field[query.sort]]: sortQuery.order[query.order]}
+    {[query.sort]: sortQuery.order[query.order]}
   ).toArray()
   .then(result=> res.status(200).json(result))
   .catch(err=>res.status(500).json({err: 'Could not get score'}))
