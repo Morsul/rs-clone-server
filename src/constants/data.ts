@@ -4,3 +4,5 @@ export const sortQuery = {
     DESC: -1
   }
 }
+
+export const getSaltValue = () => Math.round(Math.random()*(25-10+1)+10);
