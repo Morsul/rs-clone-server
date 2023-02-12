@@ -1,44 +1,33 @@
 // const express = require("express");
 import express, {Request,Response,Application} from 'express';
-import { MongoClient } from 'mongodb';
+import { Collection, Db, MongoClient } from 'mongodb';
+import { mongoDB, port, sortQuery} from './src/constants';
+import { IUser, IResult } from './src/types';
 import bcrypt from 'bcrypt';
-import { mongoDB, port } from "./src/const";
-
-const app:Application = express();
-
-
-const sortQuery = {
-  field: {
-    time: "timeField",
-    score: "scoreFiel"
-  },
-  order:{
-    ASC: 1,
-    DESC: -1
-  }
-}
 
 const client = new MongoClient(mongoDB);
+
+const app:Application = express();
 app.use(express.json())
 
 // Database Name
 const dbName = 'mmData';
-let db;
-let users:any;
-let result:any;
+let db: Db;
+let users:Collection<IUser>;
+let result:Collection<IResult>;
 
 //connection to server
-async function main() {
-  await client.connect();
-  console.log('Connected successfully to server');
-  db = client.db(dbName);
-  users = db.collection('usercollections')
-  result = db.collection('resultcollections')
-  return 'done.';
+const main = async () => {
+  await client.connect().then(res=>{
+      console.log('Connected successfully to server');
+      db = client.db(dbName);
+      users = db.collection('usercollections');
+      result = db.collection('resultcollections');
+    }).then(res=>{console.log('done.')})
 }
 
 main()
-  .then(console.log)
+  .then()
   .catch(console.error)
 //connection to server
 
@@ -46,7 +35,7 @@ main()
 // add user
 app.post('/user', async (req:Request, res:Response) => {
   const user = req.body
-  user.pwdField = await bcrypt.hash(user.pwdField, Math.random()*(10-25)+10)
+  user.username = await bcrypt.hash(user.username, Math.random()*(10-25)+10)
   users.insertOne(user)
   .then((result: any)=>{
     res.status(201).json(result)
@@ -59,8 +48,8 @@ app.post('/user', async (req:Request, res:Response) => {
 // get user by name(login)
 app.get('/user/:name', (req:Request, res:Response) => {
   users.findOne(
-    {userField: req.params.name}, 
-    {projection: {_id: 0, pwdField: 0}}
+    {username: req.params.name}, 
+    {projection: {_id: 0, username: 0}}
   )
   .then((result: any)=>{
     res.status(200).json(result);
@@ -73,21 +62,26 @@ app.get('/user/:name', (req:Request, res:Response) => {
 
 // login
 app.get('/login', (req:Request, res:Response) => {
-  const userPwd = req.body.userPwd
+  const userPwd = req.query.password as string
   users.findOne(
-    {userField: req.body.userField}, 
+    {username: req.query.username}, 
     {projection: {_id: 0}}
   )
-  .then(async (result: { pwdField: any; })=>{
-    const isPWDSame = await bcrypt.compare(userPwd, result.pwdField);
-    if(!isPWDSame){
-      return res.status(404).json({err: 'Wrong password'});
-    } else {
-      delete result.pwdField;
-      return res.status(200).json(result);
-    }    
+  .then((result)=>{
+    if(result){
+      const isPWDSame = bcrypt.compare(userPwd, result.password!);
+      if(!isPWDSame){
+        return res.status(500).json({err: 'Wrong password'});
+      } else {
+        delete result.password;
+        return res.status(200).json(result);
+      }    
+    } else{
+      res.status(404).json({err: 'User not found'})
+    }
+
   })
-  .catch((err: any) =>res.status(500).json({err: 'Could note get info'}))
+  .catch((err: any) =>res.status(404).json({err: 'User not found'}))
 });
 
 // add score start
@@ -103,10 +97,10 @@ app.post('/score', (req:Request, res:Response) => {
 //get score + sorting
 app.get('/score', (req:Request, res:Response)=>{
   const {query} = req;
-  const searchQuery = query.levelIDFild === undefined ? {} : {levelIDFild: query.levelIDFild}
+  const searchQuery = query.level === undefined ? {} : {level: Number(query.level)}
   let limit = 0
   let skip = 0;
-  let a = query.sort as string;
+
   if (query.limit !== undefined){
     limit = Number(query.limit);
     if (query.page !== undefined){
@@ -120,9 +114,8 @@ app.get('/score', (req:Request, res:Response)=>{
   )
   .skip(skip)
   .limit(limit)
-  .sort(
-    
-    {[(sortQuery.field as any)[query.sort as string]]: (sortQuery.order as any)[query.order as string]}
+  .sort(    
+    {[query.sort as string]: (sortQuery.order as any)[query.order as string]}
   ).toArray()
   .then((result: any)=> res.status(200).json(result))
   .catch((err: any)=>res.status(500).json({err: 'Could not get score'}))
