@@ -4,6 +4,7 @@ import { mongoDB, port, dbName} from './constants/index';
 import { IUser, IResult } from './types';
 
 import { UserRouter } from './router/user';
+import { Server } from 'http';
 
 
 export class RSCloneServer{
@@ -13,14 +14,27 @@ export class RSCloneServer{
   private _resultCollection!: Collection<IResult>;
   private _app: Application;
   private _userRouter!: UserRouter;
+  private _server: Server;
   constructor(){
     this._client = new MongoClient(mongoDB);
     
     this._app = express();
     this._app.use(express.json())
-    this._app.listen(port, ():void => {
+
+    this._server = this._app.listen(port, ():void => {
       console.log(`Example app listening on port ${port}!`);
     });
+
+    process.on('SIGKILL', () => {
+      this._server.close(() => {
+        console.log('close connection, close server');
+      })
+    })
+    // process.on('SIGINT', () => {
+    //   this._server.close(() => {
+    //     console.log('close connection, exiting server');
+    //   })
+    // })
 
     
     this.Start()
@@ -41,6 +55,6 @@ export class RSCloneServer{
         return this._client.db(dbName);            
       })
   }
-  
+ 
 }
 

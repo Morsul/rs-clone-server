@@ -33,9 +33,9 @@ export class UserHandler {
         {username: req.query.username}, 
         {projection: {_id: 0}}
       )
-      .then((result: WithId<IUser> | null)=>{
+      .then(async (result: WithId<IUser> | null)=>{
         if(result){
-          const isPWDSame = bcrypt.compare(userPwd, result.password!);
+          const isPWDSame = await bcrypt.compare(userPwd, result.password!);
           if(!isPWDSame){
             return res.status(responseStatus.error).json({err: 'Wrong password'});
           } else {
