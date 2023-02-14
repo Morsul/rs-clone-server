@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Collection, InsertOneResult, OptionalId, WithId } from "mongodb";
+import { Collection, InsertOneResult, WithId } from "mongodb";
 import { IUser } from "../types";
 import { getSaltValue, responseStatus } from "../constants";
 import bcrypt from 'bcrypt';

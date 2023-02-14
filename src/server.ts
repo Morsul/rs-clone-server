@@ -1,19 +1,21 @@
 import express, {Application, IRouter, response} from 'express';
 import { Collection, Db, MongoClient } from 'mongodb';
 import { mongoDB, port, dbName} from './constants/index';
-import { IUser, IResult } from './types';
+import { IUser, IScore } from './types';
 
 import { UserRouter } from './router/user';
 import { Server } from 'http';
+import { ScoreRouter } from './router/score';
 
 
 export class RSCloneServer{
   private _db!: Db;
   private _client: MongoClient;
   private _usersCollection!: Collection<IUser>;
-  private _resultCollection!: Collection<IResult>;
+  private _resultCollection!: Collection<IScore>;
   private _app: Application;
   private _userRouter!: UserRouter;
+  private _scoreRouter!: ScoreRouter;
   private _server: Server;
   constructor(){
     this._client = new MongoClient(mongoDB);
@@ -25,14 +27,14 @@ export class RSCloneServer{
       console.log(`Example app listening on port ${port}!`);
     });
 
-    process.on('SIGKILL', () => {
-      this._server.close(() => {
-        console.log('close connection, close server');
-      })
-    })
+    // process.on('SIGKILL', () => {
+    //   this._server.close(() => {
+    //     console.log('SIGKILL close connection, close server');
+    //   })
+    // })
     // process.on('SIGINT', () => {
     //   this._server.close(() => {
-    //     console.log('close connection, exiting server');
+    //     console.log('SIGINT close connection, exiting server');
     //   })
     // })
 
@@ -43,7 +45,8 @@ export class RSCloneServer{
       this._usersCollection = this._db.collection('usercollections');
       this._resultCollection = this._db.collection('resultcollections');
       this._userRouter = new UserRouter(this._usersCollection);
-      this._app.use(this._userRouter as IRouter)
+      this._scoreRouter = new ScoreRouter(this._resultCollection);
+      this._app.use([this._userRouter as IRouter, this._scoreRouter as IRouter])
       console.log('done!')
     })
     .catch(console.error);
@@ -56,5 +59,10 @@ export class RSCloneServer{
       })
   }
  
+  closeConnection = (): void =>{
+    this._server.close(() => {
+      console.log('SIGINT close connection, exiting server');
+    })
+  }
 }
 

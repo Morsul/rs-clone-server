@@ -4,9 +4,9 @@ export interface IUser{
   avatartId: number
 }
 
-export interface IResult{
+export interface IScore{
   username: string,
-  time: string
+  time: number
   level: number,
   score: number,
 }
