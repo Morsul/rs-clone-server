@@ -1,5 +1,6 @@
 import express, {Application, IRouter, response} from 'express';
 import { Collection, Db, MongoClient } from 'mongodb';
+import cors from 'cors';
 import { mongoDB, port, dbName} from './constants/index';
 import { IUser, IScore } from './types';
 
@@ -21,6 +22,7 @@ export class RSCloneServer{
     this._client = new MongoClient(mongoDB);
     
     this._app = express();
+    this._app.use(cors)
     this._app.use(express.json())
 
     this._server = this._app.listen(port, ():void => {
