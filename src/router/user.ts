@@ -8,8 +8,9 @@ export class UserRouter{
     const router = Router();
     const userHandler = new UserHandler(collection);
     router.route('/user')
-    .get(userHandler.getUP)
-    .post(userHandler.addUser);
+      .post(userHandler.addUser);
+    router.route('/login')    
+      .post(userHandler.getUP)
     return router;
   }
 }

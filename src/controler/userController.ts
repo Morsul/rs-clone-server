@@ -28,9 +28,9 @@ export class UserHandler {
   }
 
   getUP = async (req:Request, res:Response) => {
-      const userPwd = String(req.query.password);
+      const userPwd = String(req.body.password);
       return this._collection.findOne(
-        {username: req.query.username}, 
+        {username: req.body.username}, 
         {projection: {_id: 0}}
       )
       .then(async (result: WithId<IUser> | null)=>{
