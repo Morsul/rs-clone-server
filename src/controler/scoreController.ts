@@ -18,7 +18,7 @@ export class ScoreHandler{
     .catch((err: any)=>res.status(responseStatus.error).json({err: 'Could not save score'}))
   };
 
-  getScore =(req:Request, res:Response)=>{
+  getScore = async (req:Request, res:Response)=>{
     const {query} = req;
     const searchQuery = query.level === undefined ? {} : {level: Number(query.level)}
     let limit = 0
@@ -30,7 +30,9 @@ export class ScoreHandler{
         skip = Number(limit*(Number(query.page) -1))
       }
     }
-    
+
+    const count = Math.ceil (await this._collection.countDocuments(searchQuery)/limit)
+
     this._collection.find(
       searchQuery,
       {projection: {_id: 0}}
@@ -40,7 +42,7 @@ export class ScoreHandler{
     .sort(    
       {[query.sort as string]: (sortQuery.order as any)[query.order as string]}
     ).toArray()
-    .then((result: WithId<IScore>[])=> res.status(responseStatus.ok).json(result))
+    .then((result: WithId<IScore>[])=> res.status(responseStatus.ok).json({data: result, pageCount: count}))
     .catch((err: any)=>res.status(responseStatus.error).json({err: 'Could not get score'}))
   }
 }
