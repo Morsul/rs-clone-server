@@ -8,8 +8,8 @@ export class ScoreRouter{
     const router = Router();
     const scoreHandler = new ScoreHandler(collection);
     router.route('/score')
-    .get(scoreHandler.getScore)
-    .post(scoreHandler.addScore);
+      .get(scoreHandler.getScore)
+      .post(scoreHandler.addScore);
     return router;
   }
 }

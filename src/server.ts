@@ -1,5 +1,6 @@
 import express, {Application, IRouter, response} from 'express';
 import { Collection, Db, MongoClient } from 'mongodb';
+import cors from 'cors';
 import { mongoDB, port, dbName} from './constants/index';
 import { IUser, IScore } from './types';
 
@@ -21,24 +22,13 @@ export class RSCloneServer{
     this._client = new MongoClient(mongoDB);
     
     this._app = express();
+    this._app.use(cors())
     this._app.use(express.json())
 
     this._server = this._app.listen(port, ():void => {
       console.log(`Example app listening on port ${port}!`);
     });
-
-    // process.on('SIGKILL', () => {
-    //   this._server.close(() => {
-    //     console.log('SIGKILL close connection, close server');
-    //   })
-    // })
-    // process.on('SIGINT', () => {
-    //   this._server.close(() => {
-    //     console.log('SIGINT close connection, exiting server');
-    //   })
-    // })
-
-    
+   
     this.Start()
     .then(response=>{
       this._db = response;
@@ -61,7 +51,7 @@ export class RSCloneServer{
  
   closeConnection = (): void =>{
     this._server.close(() => {
-      console.log('SIGINT close connection, exiting server');
+      console.log('close connection, exiting server');
     })
   }
 }
