@@ -5,4 +5,5 @@ export const sortQuery = {
   }
 }
 
-export const getSaltValue = () => Math.round(Math.random()*(10-8+1)+8);
+// export const getSaltValue = () => Math.round(Math.random()*(10-8+1)+8);
+export const getSaltValue = () => 10;
